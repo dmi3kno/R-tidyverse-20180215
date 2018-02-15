@@ -111,3 +111,13 @@ knitr::include_graphics("fig/clone.png", auto_pdf = TRUE, dpi = NULL)
 ```
 
 At the end of the workshop we will try to fetch the changes upstream ("sync the fork"), resolve conflicts, push the repo and suggest revisions back to the original maintainer (me) in a Pull request.
+
+
+## End of workshop | github collaboration workflow
+
+A few steps left:
+
+- Add new remote called "upstream" using New Branch > Remote buttons
+- In Terminal, call `git fetch remote`
+- Make sure you are still on `master` branch
+- `git merge upstream/master`
