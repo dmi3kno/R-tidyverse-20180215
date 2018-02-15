@@ -30,3 +30,7 @@ ggplot(gapminder)+
 #   geom_<GEOM_FUNCTION>(mapping=aes(<AESTETICS>))
 
 #' Let's learn some more about `ggplot2` and its functions!
+
+## Imagine the rest of the script from before lunch!  
+
+kdsgfkgsadf
