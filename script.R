@@ -158,5 +158,11 @@ ggplot(gapminder) +
   geom_point(mapping=aes(x=gdpPercap, y=lifeExp, color=continent, size=pop))+
   scale_x_log10() +
   labs(x="GDP per capita i USD", y="Life expectancy at birth in years", 
-       color="Continent",size="Population")
-  # facet_wrap(~year)
+       color="Continent",size="Population") + 
+  facet_wrap(~year)
+
+#' Lunsj dag 1
+#' Tema etter lunsj er datamanipulering, se eget script, dplyr.R 
+
+
+ 
