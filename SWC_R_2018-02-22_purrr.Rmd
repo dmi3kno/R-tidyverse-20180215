@@ -1,75 +1,140 @@
 ---
 title: "Functional programming in R"
-output: html_notebook
+output:  
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+  html_notebook: default
+date: "18 February 2018"
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+## Functional programming
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+In the `tidyr` lesson we were manually downloading spreadsheets to join to `gapminder`. But what if someone wants to rerun our script? They wouldnt know which files to download or where to find those files. And what if we need to rerun our analysis for some other metrics or import 100 new columns from gapminder spreadsheets?
+
+There's a saying among programmers: "Whenever you repeat code more than twice, write a function". So what are functions?
+
+Functions are reusable piece of code that encapsulates logic that can be applied to different objects repeatedly. In R everything is a function (even `+`). Functions take **arguments** and return an object (functions can return only one object, however complex it is). Here's an example of a simple function:
 
 ```{r}
-library(jsonlite)
+add_noise <- function(x){
+  len <- length(x)
+  x + rnorm(len)
+}
+
+add_noise(1:10)
+```
+
+What does it do? Well, it takes a vector and adds normally distributed random values to each of its elements. Notice there's an argument `x` and the result of the last operation, namely `x + rnorm(len)` is returned as the output. How can you break this function, i.e. how can you trick it to return error? 
+
+How do you go about writing a function? It may be difficult to start from scratch, so here's an advice: "Do it for one, turn it into a function to run it for any". In other words, dont focus on writing a function until you have a piece of code that works for one element. Then think how the code can be generalized, by distilling some "arguments" and thinking of the return objects and how those may be used by subsequent operations. We are going to write our first function very soon, but for now remember this: "Whenever you are tempted to copy-paste, you should probably write a function instead".
+
+There's a lot to learn about writing good function, including how to provide error handling and foresee problems your users may run into. See respective section of [STAT545 course](http://stat545.com/cm102_writing-functions.html).
+
+## Mission: Getting the data out of googlesheets
+
+```{r}
 library(tidyverse)
-library(stringr)
-library(glue)
-library(httr)
+gapminder <- gapminder::gapminder
+gapminder_datasources <- read_csv("gapminder_datasources.csv")
+```
 
-json_txt <- read_lines("https://www.gapminder.org/wp-content/themes/gapminder/cronJobs/json.js")
+Lets go back to the table and note how url is built. Then we will build a template for url ()
 
-sources <- fromJSON(paste0("[",substring(json_txt, 20),"]"), simplifyVector = FALSE)[[1]]
-
-sheets_cat<- enframe(sources) %>% 
-  mutate(value=map(value, enframe)) %>% 
-  unnest %>% 
-  mutate(value=unlist(value)) %>% 
-  spread(key=name1, value=value)
-
-gs_prefix <- "https://docs.google.com/spreadsheet/pub?key={key}"
-
-key1 <- "pyj6tScZqmEfI4sLVvEQtHw"
-
-re_url <- HEAD(glue(gs_prefix, key=key1))
-
-stop_for_status(re_url)
-
-map_chr(re_url, "url")
-
-key2 <- "1JIGjdPybxc4kL-BUGbZa_zC7-WdR0QzycDUflwf-oHw"
-
-pattern1 <- "https://docs.google.com/spreadsheets/d/{key}/gviz/tq?tqx=out:csv"
-pattern2 <- "https://docs.google.com/spreadsheets/d/{key}/export?format=csv"
-
-url_csv <- glue(pattern1, key=key2)
-
-gs_read(gs_key(key2, lookup = FALSE), range =cell_rows(1:277), sheet=1)
-
-https://docs.google.com/spreadsheets/d/1JIGjdPybxc4kL-BUGbZa_zC7-WdR0QzycDUflwf-oHw/gviz/tq?tqx=out:csv&sheet=Data
-
-httr::GET("https://sheets.googleapis.com/v4/spreadsheets/1JIGjdPybxc4kL-BUGbZa_zC7-WdR0QzycDUflwf-oHw/values/Data!A1:D?majorDimension=COLUMNS&valueRenderOption=FORMULA")
-
-httr::GET("https://www.googleapis.com/auth/spreadsheets")
-
-sheets_cat %>% distinct(category)
+```{r}
 
 library(glue)
-download.file(glue("https://docs.google.com/spreadsheets/d/{key}/gviz/tq?tqx=out:csv", 
-              key="pyj6tScZqmEfI4sLVvEQtHw"), )
+library(readxl)
 
-https://docs.google.com/spreadsheet/pub?key=&output=csv
-https://docs.google.com/spreadsheets/d/pyj6tScZqmEfbZyl0qjbiRQ/export?format=csv
+# lets pick a key
+key="0ArfEDsV3bBwCcGhBd2NOQVZ1eWowNVpSNjl1c3lRSWc"
 
+file_url <- glue("https://docs.google.com/spreadsheet/pub?key={k}&output=xlsx", k=key)
 
-#install.packages("googlesheets")
-#install.packages("httpuv")
-library(googlesheets)
-
-googlesheets::gs_key("pyj6tScZqmEfI4sLVvEQtHw", lookup = FALSE)
-gs_prefix <- "https://docs.google.com/spreadsheet/pub?key="
+download.file(file_url, "temp.xlsx",  mode="wb")
+sheet_df <- read_excel("temp.xlsx")
+file.remove("temp.xlsx")
 
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+## **Challenge 1.** {.tabset .tabset-fade .tabset-pills}
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+### Assignment
+> 1. Turn the code above into your first function. It should take a google sheet key, and return a raw data frame from gapminder. Test it on one of the keys you can find on gapminder page.
+>
+> 2. While we are at it, generalize code we wrote in the last session to reformat these types of dataframes. Add the necessary post-processing code and create new function which takes a google sheet key and returns a cleaned up dataframe.
+>
+> TIP: You will have a challenge of naming columns. One solution could be to not "tidy"" the tables up completely, but rather keep them in the "long" format (with variable name in a separate column).
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+### Solution
+
+
+```{r}
+read_gapminder_sheet1 <- function(key){
+  file_url <- glue("https://docs.google.com/spreadsheet/pub?key={k}&output=xlsx", k=key)
+  download.file(file_url, "temp.xlsx",  mode="wb")
+  raw_df <- read_excel("temp.xlsx", sheet = "Data")
+  file.remove("temp.xlsx")
+  raw_df
+}
+
+read_gapminder_sheet2 <- function(key){
+ file_url <- glue("https://docs.google.com/spreadsheet/pub?key={k}&output=xlsx", k=key)
+ download.file(file_url, "temp.xlsx",  mode="wb")
+ raw_df <- read_excel("temp.xlsx", sheet = "Data")
+ file.remove("temp.xlsx")
+
+  # saves away cleaned up name of first column and renames it to `country`
+ tbl_name <- names(raw_df)[1]
+ names(raw_df)[1] <- "country"
+
+  # tidy the table using generic column name
+ long_df <- raw_df %>% 
+    gather(key=year, value=value, -country) %>% 
+    mutate(year=as.integer(year),
+           value=as.numeric(value),
+           var_name = make.names(tbl_name))
+ long_df
+}
+```
+
+## Scaling it up with purrr
+
+Lets find the spreadsheets we were downloading manually last time:
+
+```{r}
+sheets_of_interest <- gapminder_datasources %>% 
+  filter(str_detect(indicatorName, "[Tt]otal [Ff]ertility|[Ii]nfant [Mm]ortality"), is.na(subcategory)) %>% 
+  pull(sheet_id)
+```
+
+So now if we now map this function to our `sheets_of_interest` we should be able to get a list of cleaned up datasets. This list of tibbles of similar structure is very typical type of animal in R. Since the column names are matching, we could probably just append them together. In `purrr` package there's a function `map_df` which outputs a dataframe by first producing a list of similar dataframes and then binding them together.
+
+```{r}
+gapminder_web_long <- map_df(sheets_of_interest, read_gapminder_sheet2)
+#View(gapminder_web_long)
+```
+
+## **Bonus Challenge 2.** {.tabset .tabset-fade .tabset-pills}
+
+### Assignment
+> 1. The only thing left is just to put the column names back where they belong - to column headers. Take the "long" dataframe we just created and convert it to `tidy` format
+>
+> 2. Join it to gapminder dataset, preserving 1704 rows in original gapminder dataframe. What type of join makes sense here? Save your complete dataset in "gapminder_plus2.csv"
+>
+> TIP: you will have to create a unique index for groups you are trying to collapse together
+
+### Solution
+
+```{r}
+gapminder_web_long %>% 
+  group_by(country, var_name) %>% 
+  mutate(country_year_id=1:n()) %>% 
+  spread(key=var_name, value=value) %>% 
+  select(-country_year_id) %>% 
+  right_join(gapminder) %>% 
+  write_csv("gapminder_plus2.csv")
+```
+

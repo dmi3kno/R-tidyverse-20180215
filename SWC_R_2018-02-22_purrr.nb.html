@@ -10,6 +10,7 @@
 
 
 
+<meta name="date" content="2018-02-18" />
 
 <title>Functional programming in R</title>
 
@@ -168,83 +169,198 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">Functional programming in R</h1>
+<h4 class="date"><em>18 February 2018</em></h4>
 
 </div>
 
 
 <!-- rnb-text-begin -->
-<p>This is an <a href="http://rmarkdown.rstudio.com">R Markdown</a> Notebook. When you execute code within the notebook, the results appear beneath the code.</p>
-<p>Try executing this chunk by clicking the <em>Run</em> button within the chunk or by placing your cursor inside it and pressing <em>Ctrl+Shift+Enter</em>.</p>
+<div id="functional-programming" class="section level2">
+<h2>Functional programming</h2>
+<p>In the <code>tidyr</code> lesson we were manually downloading spreadsheets to join to <code>gapminder</code>. But what if someone wants to rerun our script? They wouldnt know which files to download or where to find those files. And what if we need to rerun our analysis for some other metrics or import 100 new columns from gapminder spreadsheets?</p>
+<p>There’s a saying among programmers: “Whenever you repeat code more than twice, write a function”. So what are functions?</p>
+<p>Functions are reusable piece of code that encapsulates logic that can be applied to different objects repeatedly. In R everything is a function (even <code>+</code>). Functions take <strong>arguments</strong> and return an object (functions can return only one object, however complex it is). Here’s an example of a simple function:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShqc29ubGl0ZSlcbmxpYnJhcnkodGlkeXZlcnNlKVxubGlicmFyeShzdHJpbmdyKVxubGlicmFyeShnbHVlKVxubGlicmFyeShodHRyKVxuXG5qc29uX3R4dCA8LSByZWFkX2xpbmVzKFwiaHR0cHM6Ly93d3cuZ2FwbWluZGVyLm9yZy93cC1jb250ZW50L3RoZW1lcy9nYXBtaW5kZXIvY3JvbkpvYnMvanNvbi5qc1wiKVxuXG5zb3VyY2VzIDwtIGZyb21KU09OKHBhc3RlMChcIltcIixzdWJzdHJpbmcoanNvbl90eHQsIDIwKSxcIl1cIiksIHNpbXBsaWZ5VmVjdG9yID0gRkFMU0UpW1sxXV1cblxuc2hlZXRzX2NhdDwtIGVuZnJhbWUoc291cmNlcykgJT4lIFxuICBtdXRhdGUodmFsdWU9bWFwKHZhbHVlLCBlbmZyYW1lKSkgJT4lIFxuICB1bm5lc3QgJT4lIFxuICBtdXRhdGUodmFsdWU9dW5saXN0KHZhbHVlKSkgJT4lIFxuICBzcHJlYWQoa2V5PW5hbWUxLCB2YWx1ZT12YWx1ZSlcblxuZ3NfcHJlZml4IDwtIFwiaHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXQvcHViP2tleT17a2V5fVwiXG5cbmtleTEgPC0gXCJweWo2dFNjWnFtRWZJNHNMVnZFUXRId1wiXG5cbnJlX3VybCA8LSBIRUFEKGdsdWUoZ3NfcHJlZml4LCBrZXk9a2V5MSkpXG5cbnN0b3BfZm9yX3N0YXR1cyhyZV91cmwpXG5cbm1hcF9jaHIocmVfdXJsLCBcInVybFwiKVxuXG5rZXkyIDwtIFwiMUpJR2pkUHlieGM0a0wtQlVHYlphX3pDNy1XZFIwUXp5Y0RVZmx3Zi1vSHdcIlxuXG5wYXR0ZXJuMSA8LSBcImh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0cy9kL3trZXl9L2d2aXovdHE/dHF4PW91dDpjc3ZcIlxucGF0dGVybjIgPC0gXCJodHRwczovL2RvY3MuZ29vZ2xlLmNvbS9zcHJlYWRzaGVldHMvZC97a2V5fS9leHBvcnQ/Zm9ybWF0PWNzdlwiXG5cbnVybF9jc3YgPC0gZ2x1ZShwYXR0ZXJuMSwga2V5PWtleTIpXG5cbmdzX3JlYWQoZ3Nfa2V5KGtleTIsIGxvb2t1cCA9IEZBTFNFKSwgcmFuZ2UgPWNlbGxfcm93cygxOjI3NyksIHNoZWV0PTEpXG5cbmh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0cy9kLzFKSUdqZFB5YnhjNGtMLUJVR2JaYV96QzctV2RSMFF6eWNEVWZsd2Ytb0h3L2d2aXovdHE/dHF4PW91dDpjc3Ymc2hlZXQ9RGF0YVxuXG5odHRyOjpHRVQoXCJodHRwczovL3NoZWV0cy5nb29nbGVhcGlzLmNvbS92NC9zcHJlYWRzaGVldHMvMUpJR2pkUHlieGM0a0wtQlVHYlphX3pDNy1XZFIwUXp5Y0RVZmx3Zi1vSHcvdmFsdWVzL0RhdGEhQTE6RD9tYWpvckRpbWVuc2lvbj1DT0xVTU5TJnZhbHVlUmVuZGVyT3B0aW9uPUZPUk1VTEFcIilcblxuaHR0cjo6R0VUKFwiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vYXV0aC9zcHJlYWRzaGVldHNcIilcblxuc2hlZXRzX2NhdCAlPiUgZGlzdGluY3QoY2F0ZWdvcnkpXG5cbmxpYnJhcnkoZ2x1ZSlcbmRvd25sb2FkLmZpbGUoZ2x1ZShcImh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0cy9kL3trZXl9L2d2aXovdHE/dHF4PW91dDpjc3ZcIiwgXG4gICAgICAgICAgICAgIGtleT1cInB5ajZ0U2NacW1FZkk0c0xWdkVRdEh3XCIpLCApXG5cbmh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0L3B1Yj9rZXk9Jm91dHB1dD1jc3Zcbmh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0cy9kL3B5ajZ0U2NacW1FZmJaeWwwcWpiaVJRL2V4cG9ydD9mb3JtYXQ9Y3N2XG5cblxuI2luc3RhbGwucGFja2FnZXMoXCJnb29nbGVzaGVldHNcIilcbiNpbnN0YWxsLnBhY2thZ2VzKFwiaHR0cHV2XCIpXG5saWJyYXJ5KGdvb2dsZXNoZWV0cylcblxuZ29vZ2xlc2hlZXRzOjpnc19rZXkoXCJweWo2dFNjWnFtRWZJNHNMVnZFUXRId1wiLCBsb29rdXAgPSBGQUxTRSlcbmdzX3ByZWZpeCA8LSBcImh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0L3B1Yj9rZXk9XCJcblxuYGBgIn0= -->
-<pre class="r"><code>library(jsonlite)
-library(tidyverse)
-library(stringr)
-library(glue)
-library(httr)
-
-json_txt &lt;- read_lines(&quot;https://www.gapminder.org/wp-content/themes/gapminder/cronJobs/json.js&quot;)
-
-sources &lt;- fromJSON(paste0(&quot;[&quot;,substring(json_txt, 20),&quot;]&quot;), simplifyVector = FALSE)[[1]]
-
-sheets_cat&lt;- enframe(sources) %&gt;% 
-  mutate(value=map(value, enframe)) %&gt;% 
-  unnest %&gt;% 
-  mutate(value=unlist(value)) %&gt;% 
-  spread(key=name1, value=value)
-
-gs_prefix &lt;- &quot;https://docs.google.com/spreadsheet/pub?key={key}&quot;
-
-key1 &lt;- &quot;pyj6tScZqmEfI4sLVvEQtHw&quot;
-
-re_url &lt;- HEAD(glue(gs_prefix, key=key1))
-
-stop_for_status(re_url)
-
-map_chr(re_url, &quot;url&quot;)
-
-key2 &lt;- &quot;1JIGjdPybxc4kL-BUGbZa_zC7-WdR0QzycDUflwf-oHw&quot;
-
-pattern1 &lt;- &quot;https://docs.google.com/spreadsheets/d/{key}/gviz/tq?tqx=out:csv&quot;
-pattern2 &lt;- &quot;https://docs.google.com/spreadsheets/d/{key}/export?format=csv&quot;
-
-url_csv &lt;- glue(pattern1, key=key2)
-
-gs_read(gs_key(key2, lookup = FALSE), range =cell_rows(1:277), sheet=1)
-
-https://docs.google.com/spreadsheets/d/1JIGjdPybxc4kL-BUGbZa_zC7-WdR0QzycDUflwf-oHw/gviz/tq?tqx=out:csv&amp;sheet=Data
-
-httr::GET(&quot;https://sheets.googleapis.com/v4/spreadsheets/1JIGjdPybxc4kL-BUGbZa_zC7-WdR0QzycDUflwf-oHw/values/Data!A1:D?majorDimension=COLUMNS&amp;valueRenderOption=FORMULA&quot;)
-
-httr::GET(&quot;https://www.googleapis.com/auth/spreadsheets&quot;)
-
-sheets_cat %&gt;% distinct(category)
-
-library(glue)
-download.file(glue(&quot;https://docs.google.com/spreadsheets/d/{key}/gviz/tq?tqx=out:csv&quot;, 
-              key=&quot;pyj6tScZqmEfI4sLVvEQtHw&quot;), )
-
-https://docs.google.com/spreadsheet/pub?key=&amp;output=csv
-https://docs.google.com/spreadsheets/d/pyj6tScZqmEfbZyl0qjbiRQ/export?format=csv
-
-
-#install.packages(&quot;googlesheets&quot;)
-#install.packages(&quot;httpuv&quot;)
-library(googlesheets)
-
-googlesheets::gs_key(&quot;pyj6tScZqmEfI4sLVvEQtHw&quot;, lookup = FALSE)
-gs_prefix &lt;- &quot;https://docs.google.com/spreadsheet/pub?key=&quot;
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYWRkX25vaXNlIDwtIGZ1bmN0aW9uKHgpe1xuICBsZW4gPC0gbGVuZ3RoKHgpXG4gIHggKyBybm9ybShsZW4pXG59XG5hZGRfbm9pc2UoMToxMClcbmBgYCJ9 -->
+<pre class="r"><code>add_noise &lt;- function(x){
+  len &lt;- length(x)
+  x + rnorm(len)
+}
+add_noise(1:10)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIFsxXSAgMS4xNDUyNzQgIDMuOTk3MzE0ICAzLjExMDYyMyAgNS40NTM5NDQgIDQuOTQ5Mzg3ICA1LjI1NDk4MyAgNi4xNzE2NDUgIDcuODk5MTI5ICA4LjUzODQ1NVxuWzEwXSAxMC43Njk1MTFcbiJ9 -->
+<pre><code> [1]  1.145274  3.997314  3.110623  5.453944  4.949387  5.254983  6.171645  7.899129  8.538455
+[10] 10.769511</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>What does it do? Well, it takes a vector and adds normally distributed random values to each of its elements. Notice there’s an argument <code>x</code> and the result of the last operation, namely <code>x + rnorm(len)</code> is returned as the output. How can you break this function, i.e. how can you trick it to return error?</p>
+<p>How do you go about writing a function? It may be difficult to start from scratch, so here’s an advice: “Do it for one, turn it into a function to run it for any”. In other words, dont focus on writing a function until you have a piece of code that works for one element. Then think how the code can be generalized, by distilling some “arguments” and thinking of the return objects and how those may be used by subsequent operations. We are going to write our first function very soon, but for now remember this: “Whenever you are tempted to copy-paste, you should probably write a function instead”.</p>
+<p>There’s a lot to learn about writing good function, including how to provide error handling and foresee problems your users may run into. See respective section of <a href="http://stat545.com/cm102_writing-functions.html">STAT545 course</a>.</p>
+</div>
+<div id="mission-getting-the-data-out-of-googlesheets" class="section level2">
+<h2>Mission: Getting the data out of googlesheets</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5nYXBtaW5kZXIgPC0gZ2FwbWluZGVyOjpnYXBtaW5kZXJcbmdhcG1pbmRlcl9kYXRhc291cmNlcyA8LSByZWFkX2NzdihcImdhcG1pbmRlcl9kYXRhc291cmNlcy5jc3ZcIilcbmBgYCJ9 -->
+<pre class="r"><code>library(tidyverse)
+gapminder &lt;- gapminder::gapminder
+gapminder_datasources &lt;- read_csv(&quot;gapminder_datasources.csv&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiUGFyc2VkIHdpdGggY29sdW1uIHNwZWNpZmljYXRpb246XG5jb2xzKFxuICBpbmRpY2F0b3JOYW1lID0gY29sX2NoYXJhY3RlcigpLFxuICBjYXRlZ29yeSA9IGNvbF9jaGFyYWN0ZXIoKSxcbiAgc3ViY2F0ZWdvcnkgPSBjb2xfY2hhcmFjdGVyKCksXG4gIGRhdGFwcm92aWRlciA9IGNvbF9jaGFyYWN0ZXIoKSxcbiAgZGF0YXByb3ZpZGVyX2xpbmsgPSBjb2xfY2hhcmFjdGVyKCksXG4gIHNoZWV0X2lkID0gY29sX2NoYXJhY3RlcigpXG4pXG4ifQ== -->
+<pre><code>Parsed with column specification:
+cols(
+  indicatorName = col_character(),
+  category = col_character(),
+  subcategory = col_character(),
+  dataprovider = col_character(),
+  dataprovider_link = col_character(),
+  sheet_id = col_character()
+)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Lets go back to the table and note how url is built. Then we will build a template for url ()</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnbHVlKVxubGlicmFyeShyZWFkeGwpXG4jIGxldHMgcGljayBhIGtleVxua2V5PVwiMEFyZkVEc1YzYkJ3Q2NHaEJkMk5PUVZaMWVXb3dOVnBTTmpsMWMzbFJTV2NcIlxuZmlsZV91cmwgPC0gZ2x1ZShcImh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0L3B1Yj9rZXk9e2t9Jm91dHB1dD14bHN4XCIsIGs9a2V5KVxuZG93bmxvYWQuZmlsZShmaWxlX3VybCwgXCJ0ZW1wLnhsc3hcIiwgIG1vZGU9XCJ3YlwiKVxuYGBgIn0= -->
+<pre class="r"><code>library(glue)
+library(readxl)
+# lets pick a key
+key=&quot;0ArfEDsV3bBwCcGhBd2NOQVZ1eWowNVpSNjl1c3lRSWc&quot;
+file_url &lt;- glue(&quot;https://docs.google.com/spreadsheet/pub?key={k}&amp;output=xlsx&quot;, k=key)
+download.file(file_url, &quot;temp.xlsx&quot;,  mode=&quot;wb&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoidHJ5aW5nIFVSTCAnaHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXQvcHViP2tleT0wQXJmRURzVjNiQndDY0doQmQyTk9RVloxZVdvd05WcFNOamwxYzNsUlNXYyZvdXRwdXQ9eGxzeCdcbkNvbnRlbnQgdHlwZSAnYXBwbGljYXRpb24vdm5kLm9wZW54bWxmb3JtYXRzLW9mZmljZWRvY3VtZW50LnNwcmVhZHNoZWV0bWwuc2hlZXQnIGxlbmd0aCB1bmtub3duXG5kb3dubG9hZGVkIDY1NyBLQlxuIn0= -->
+<pre><code>trying URL 'https://docs.google.com/spreadsheet/pub?key=0ArfEDsV3bBwCcGhBd2NOQVZ1eWowNVpSNjl1c3lRSWc&amp;output=xlsx'
+Content type 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' length unknown
+downloaded 657 KB</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2hlZXRfZGYgPC0gcmVhZF9leGNlbChcInRlbXAueGxzeFwiKVxuZmlsZS5yZW1vdmUoXCJ0ZW1wLnhsc3hcIilcbmBgYCJ9 -->
+<pre class="r"><code>sheet_df &lt;- read_excel(&quot;temp.xlsx&quot;)
+file.remove(&quot;temp.xlsx&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFRSVUVcbiJ9 -->
+<pre><code>[1] TRUE</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="challenge-1." class="section level2 tabset tabset-fade tabset-pills">
+<h2><strong>Challenge 1.</strong></h2>
+<div id="assignment" class="section level3">
+<h3>Assignment</h3>
+<blockquote>
+<ol style="list-style-type: decimal">
+<li><p>Turn the code above into your first function. It should take a google sheet key, and return a raw data frame from gapminder. Test it on one of the keys you can find on gapminder page.</p></li>
+<li><p>While we are at it, generalize code we wrote in the last session to reformat these types of dataframes. Add the necessary post-processing code and create new function which takes a google sheet key and returns a cleaned up dataframe.</p></li>
+</ol>
+<p>TIP: You will have a challenge of naming columns. One solution could be to not “tidy”&quot; the tables up completely, but rather keep them in the “long” format (with variable name in a separate column).</p>
+</blockquote>
+</div>
+<div id="solution" class="section level3">
+<h3>Solution</h3>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVhZF9nYXBtaW5kZXJfc2hlZXQxIDwtIGZ1bmN0aW9uKGtleSl7XG4gIGZpbGVfdXJsIDwtIGdsdWUoXCJodHRwczovL2RvY3MuZ29vZ2xlLmNvbS9zcHJlYWRzaGVldC9wdWI/a2V5PXtrfSZvdXRwdXQ9eGxzeFwiLCBrPWtleSlcbiAgZG93bmxvYWQuZmlsZShmaWxlX3VybCwgXCJ0ZW1wLnhsc3hcIiwgIG1vZGU9XCJ3YlwiKVxuICByYXdfZGYgPC0gcmVhZF9leGNlbChcInRlbXAueGxzeFwiLCBzaGVldCA9IFwiRGF0YVwiKVxuICBmaWxlLnJlbW92ZShcInRlbXAueGxzeFwiKVxuICByYXdfZGZcbn1cbnJlYWRfZ2FwbWluZGVyX3NoZWV0MiA8LSBmdW5jdGlvbihrZXkpe1xuIGZpbGVfdXJsIDwtIGdsdWUoXCJodHRwczovL2RvY3MuZ29vZ2xlLmNvbS9zcHJlYWRzaGVldC9wdWI/a2V5PXtrfSZvdXRwdXQ9eGxzeFwiLCBrPWtleSlcbiBkb3dubG9hZC5maWxlKGZpbGVfdXJsLCBcInRlbXAueGxzeFwiLCAgbW9kZT1cIndiXCIpXG4gcmF3X2RmIDwtIHJlYWRfZXhjZWwoXCJ0ZW1wLnhsc3hcIiwgc2hlZXQgPSBcIkRhdGFcIilcbiBmaWxlLnJlbW92ZShcInRlbXAueGxzeFwiKVxuICAjIHNhdmVzIGF3YXkgY2xlYW5lZCB1cCBuYW1lIG9mIGZpcnN0IGNvbHVtbiBhbmQgcmVuYW1lcyBpdCB0byBgY291bnRyeWBcbiB0YmxfbmFtZSA8LSBuYW1lcyhyYXdfZGYpWzFdXG4gbmFtZXMocmF3X2RmKVsxXSA8LSBcImNvdW50cnlcIlxuICAjIHRpZHkgdGhlIHRhYmxlIHVzaW5nIGdlbmVyaWMgY29sdW1uIG5hbWVcbiBsb25nX2RmIDwtIHJhd19kZiAlPiUgXG4gICAgZ2F0aGVyKGtleT15ZWFyLCB2YWx1ZT12YWx1ZSwgLWNvdW50cnkpICU+JSBcbiAgICBtdXRhdGUoeWVhcj1hcy5pbnRlZ2VyKHllYXIpLFxuICAgICAgICAgICB2YWx1ZT1hcy5udW1lcmljKHZhbHVlKSxcbiAgICAgICAgICAgdmFyX25hbWUgPSBtYWtlLm5hbWVzKHRibF9uYW1lKSlcbiBsb25nX2RmXG59XG5gYGAifQ== -->
+<pre class="r"><code>read_gapminder_sheet1 &lt;- function(key){
+  file_url &lt;- glue(&quot;https://docs.google.com/spreadsheet/pub?key={k}&amp;output=xlsx&quot;, k=key)
+  download.file(file_url, &quot;temp.xlsx&quot;,  mode=&quot;wb&quot;)
+  raw_df &lt;- read_excel(&quot;temp.xlsx&quot;, sheet = &quot;Data&quot;)
+  file.remove(&quot;temp.xlsx&quot;)
+  raw_df
+}
+read_gapminder_sheet2 &lt;- function(key){
+ file_url &lt;- glue(&quot;https://docs.google.com/spreadsheet/pub?key={k}&amp;output=xlsx&quot;, k=key)
+ download.file(file_url, &quot;temp.xlsx&quot;,  mode=&quot;wb&quot;)
+ raw_df &lt;- read_excel(&quot;temp.xlsx&quot;, sheet = &quot;Data&quot;)
+ file.remove(&quot;temp.xlsx&quot;)
+  # saves away cleaned up name of first column and renames it to `country`
+ tbl_name &lt;- names(raw_df)[1]
+ names(raw_df)[1] &lt;- &quot;country&quot;
+  # tidy the table using generic column name
+ long_df &lt;- raw_df %&gt;% 
+    gather(key=year, value=value, -country) %&gt;% 
+    mutate(year=as.integer(year),
+           value=as.numeric(value),
+           var_name = make.names(tbl_name))
+ long_df
+}</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Add a new chunk by clicking the <em>Insert Chunk</em> button on the toolbar or by pressing <em>Ctrl+Alt+I</em>.</p>
-<p>When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the <em>Preview</em> button or press <em>Ctrl+Shift+K</em> to preview the HTML file).</p>
-<p>The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.</p>
+</div>
+</div>
+<div id="scaling-it-up-with-purrr" class="section level2">
+<h2>Scaling it up with purrr</h2>
+<p>Lets find the spreadsheets we were downloading manually last time:</p>
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2hlZXRzX29mX2ludGVyZXN0IDwtIGdhcG1pbmRlcl9kYXRhc291cmNlcyAlPiUgXG4gIGZpbHRlcihzdHJfZGV0ZWN0KGluZGljYXRvck5hbWUsIFwiW1R0XW90YWwgW0ZmXWVydGlsaXR5fFtJaV1uZmFudCBbTW1db3J0YWxpdHlcIiksIGlzLm5hKHN1YmNhdGVnb3J5KSkgJT4lIFxuICBwdWxsKHNoZWV0X2lkKVxuYGBgIn0= -->
+<pre class="r"><code>sheets_of_interest &lt;- gapminder_datasources %&gt;% 
+  filter(str_detect(indicatorName, &quot;[Tt]otal [Ff]ertility|[Ii]nfant [Mm]ortality&quot;), is.na(subcategory)) %&gt;% 
+  pull(sheet_id)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>So now if we now map this function to our <code>sheets_of_interest</code> we should be able to get a list of cleaned up datasets. This list of tibbles of similar structure is very typical type of animal in R. Since the column names are matching, we could probably just append them together. In <code>purrr</code> package there’s a function <code>map_df</code> which outputs a dataframe by first producing a list of similar dataframes and then binding them together.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2FwbWluZGVyX3dlYl9sb25nIDwtIG1hcF9kZihzaGVldHNfb2ZfaW50ZXJlc3QsIHJlYWRfZ2FwbWluZGVyX3NoZWV0MilcblxuYGBgIn0= -->
+<pre class="r"><code>gapminder_web_long &lt;- map_df(sheets_of_interest, read_gapminder_sheet2)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoidHJ5aW5nIFVSTCAnaHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXQvcHViP2tleT1waEF3Y05BVnV5ajBUQWxKZUNFemNHUSZvdXRwdXQ9eGxzeCdcbkNvbnRlbnQgdHlwZSAnYXBwbGljYXRpb24vdm5kLm9wZW54bWxmb3JtYXRzLW9mZmljZWRvY3VtZW50LnNwcmVhZHNoZWV0bWwuc2hlZXQnIGxlbmd0aCB1bmtub3duXG5kb3dubG9hZGVkIDIwNSBLQlxuXG50cnlpbmcgVVJMICdodHRwczovL2RvY3MuZ29vZ2xlLmNvbS9zcHJlYWRzaGVldC9wdWI/a2V5PXBoQXdjTkFWdXlqME5wRjJQVG92MkN3Jm91dHB1dD14bHN4J1xuQ29udGVudCB0eXBlICdhcHBsaWNhdGlvbi92bmQub3BlbnhtbGZvcm1hdHMtb2ZmaWNlZG9jdW1lbnQuc3ByZWFkc2hlZXRtbC5zaGVldCcgbGVuZ3RoIHVua25vd25cbmRvd25sb2FkZWQgNTYwIEtCXG5cbk5BcyBpbnRyb2R1Y2VkIGJ5IGNvZXJjaW9uXG4ifQ== -->
+<pre><code>trying URL 'https://docs.google.com/spreadsheet/pub?key=phAwcNAVuyj0TAlJeCEzcGQ&amp;output=xlsx'
+Content type 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' length unknown
+downloaded 205 KB
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkZ1bmN0aW9uYWwgcHJvZ3JhbW1pbmcgaW4gUiINCm91dHB1dDogaHRtbF9ub3RlYm9vaw0KLS0tDQoNClRoaXMgaXMgYW4gW1IgTWFya2Rvd25dKGh0dHA6Ly9ybWFya2Rvd24ucnN0dWRpby5jb20pIE5vdGVib29rLiBXaGVuIHlvdSBleGVjdXRlIGNvZGUgd2l0aGluIHRoZSBub3RlYm9vaywgdGhlIHJlc3VsdHMgYXBwZWFyIGJlbmVhdGggdGhlIGNvZGUuIA0KDQpUcnkgZXhlY3V0aW5nIHRoaXMgY2h1bmsgYnkgY2xpY2tpbmcgdGhlICpSdW4qIGJ1dHRvbiB3aXRoaW4gdGhlIGNodW5rIG9yIGJ5IHBsYWNpbmcgeW91ciBjdXJzb3IgaW5zaWRlIGl0IGFuZCBwcmVzc2luZyAqQ3RybCtTaGlmdCtFbnRlciouIA0KDQpgYGB7cn0NCmxpYnJhcnkoanNvbmxpdGUpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkoc3RyaW5ncikNCmxpYnJhcnkoZ2x1ZSkNCmxpYnJhcnkoaHR0cikNCg0KanNvbl90eHQgPC0gcmVhZF9saW5lcygiaHR0cHM6Ly93d3cuZ2FwbWluZGVyLm9yZy93cC1jb250ZW50L3RoZW1lcy9nYXBtaW5kZXIvY3JvbkpvYnMvanNvbi5qcyIpDQoNCnNvdXJjZXMgPC0gZnJvbUpTT04ocGFzdGUwKCJbIixzdWJzdHJpbmcoanNvbl90eHQsIDIwKSwiXSIpLCBzaW1wbGlmeVZlY3RvciA9IEZBTFNFKVtbMV1dDQoNCnNoZWV0c19jYXQ8LSBlbmZyYW1lKHNvdXJjZXMpICU+JSANCiAgbXV0YXRlKHZhbHVlPW1hcCh2YWx1ZSwgZW5mcmFtZSkpICU+JSANCiAgdW5uZXN0ICU+JSANCiAgbXV0YXRlKHZhbHVlPXVubGlzdCh2YWx1ZSkpICU+JSANCiAgc3ByZWFkKGtleT1uYW1lMSwgdmFsdWU9dmFsdWUpDQoNCmdzX3ByZWZpeCA8LSAiaHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXQvcHViP2tleT17a2V5fSINCg0Ka2V5MSA8LSAicHlqNnRTY1pxbUVmSTRzTFZ2RVF0SHciDQoNCnJlX3VybCA8LSBIRUFEKGdsdWUoZ3NfcHJlZml4LCBrZXk9a2V5MSkpDQoNCnN0b3BfZm9yX3N0YXR1cyhyZV91cmwpDQoNCm1hcF9jaHIocmVfdXJsLCAidXJsIikNCg0Ka2V5MiA8LSAiMUpJR2pkUHlieGM0a0wtQlVHYlphX3pDNy1XZFIwUXp5Y0RVZmx3Zi1vSHciDQoNCnBhdHRlcm4xIDwtICJodHRwczovL2RvY3MuZ29vZ2xlLmNvbS9zcHJlYWRzaGVldHMvZC97a2V5fS9ndml6L3RxP3RxeD1vdXQ6Y3N2Ig0KcGF0dGVybjIgPC0gImh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0cy9kL3trZXl9L2V4cG9ydD9mb3JtYXQ9Y3N2Ig0KDQp1cmxfY3N2IDwtIGdsdWUocGF0dGVybjEsIGtleT1rZXkyKQ0KDQpnc19yZWFkKGdzX2tleShrZXkyLCBsb29rdXAgPSBGQUxTRSksIHJhbmdlID1jZWxsX3Jvd3MoMToyNzcpLCBzaGVldD0xKQ0KDQpodHRwczovL2RvY3MuZ29vZ2xlLmNvbS9zcHJlYWRzaGVldHMvZC8xSklHamRQeWJ4YzRrTC1CVUdiWmFfekM3LVdkUjBRenljRFVmbHdmLW9Idy9ndml6L3RxP3RxeD1vdXQ6Y3N2JnNoZWV0PURhdGENCg0KaHR0cjo6R0VUKCJodHRwczovL3NoZWV0cy5nb29nbGVhcGlzLmNvbS92NC9zcHJlYWRzaGVldHMvMUpJR2pkUHlieGM0a0wtQlVHYlphX3pDNy1XZFIwUXp5Y0RVZmx3Zi1vSHcvdmFsdWVzL0RhdGEhQTE6RD9tYWpvckRpbWVuc2lvbj1DT0xVTU5TJnZhbHVlUmVuZGVyT3B0aW9uPUZPUk1VTEEiKQ0KDQpodHRyOjpHRVQoImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL2F1dGgvc3ByZWFkc2hlZXRzIikNCg0Kc2hlZXRzX2NhdCAlPiUgZGlzdGluY3QoY2F0ZWdvcnkpDQoNCmxpYnJhcnkoZ2x1ZSkNCmRvd25sb2FkLmZpbGUoZ2x1ZSgiaHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXRzL2Qve2tleX0vZ3Zpei90cT90cXg9b3V0OmNzdiIsIA0KICAgICAgICAgICAgICBrZXk9InB5ajZ0U2NacW1FZkk0c0xWdkVRdEh3IiksICkNCg0KaHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXQvcHViP2tleT0mb3V0cHV0PWNzdg0KaHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXRzL2QvcHlqNnRTY1pxbUVmYlp5bDBxamJpUlEvZXhwb3J0P2Zvcm1hdD1jc3YNCg0KDQojaW5zdGFsbC5wYWNrYWdlcygiZ29vZ2xlc2hlZXRzIikNCiNpbnN0YWxsLnBhY2thZ2VzKCJodHRwdXYiKQ0KbGlicmFyeShnb29nbGVzaGVldHMpDQoNCmdvb2dsZXNoZWV0czo6Z3Nfa2V5KCJweWo2dFNjWnFtRWZJNHNMVnZFUXRIdyIsIGxvb2t1cCA9IEZBTFNFKQ0KZ3NfcHJlZml4IDwtICJodHRwczovL2RvY3MuZ29vZ2xlLmNvbS9zcHJlYWRzaGVldC9wdWI/a2V5PSINCg0KYGBgDQoNCkFkZCBhIG5ldyBjaHVuayBieSBjbGlja2luZyB0aGUgKkluc2VydCBDaHVuayogYnV0dG9uIG9uIHRoZSB0b29sYmFyIG9yIGJ5IHByZXNzaW5nICpDdHJsK0FsdCtJKi4NCg0KV2hlbiB5b3Ugc2F2ZSB0aGUgbm90ZWJvb2ssIGFuIEhUTUwgZmlsZSBjb250YWluaW5nIHRoZSBjb2RlIGFuZCBvdXRwdXQgd2lsbCBiZSBzYXZlZCBhbG9uZ3NpZGUgaXQgKGNsaWNrIHRoZSAqUHJldmlldyogYnV0dG9uIG9yIHByZXNzICpDdHJsK1NoaWZ0K0sqIHRvIHByZXZpZXcgdGhlIEhUTUwgZmlsZSkuDQoNClRoZSBwcmV2aWV3IHNob3dzIHlvdSBhIHJlbmRlcmVkIEhUTUwgY29weSBvZiB0aGUgY29udGVudHMgb2YgdGhlIGVkaXRvci4gQ29uc2VxdWVudGx5LCB1bmxpa2UgKktuaXQqLCAqUHJldmlldyogZG9lcyBub3QgcnVuIGFueSBSIGNvZGUgY2h1bmtzLiBJbnN0ZWFkLCB0aGUgb3V0cHV0IG9mIHRoZSBjaHVuayB3aGVuIGl0IHdhcyBsYXN0IHJ1biBpbiB0aGUgZWRpdG9yIGlzIGRpc3BsYXllZC4NCg==</div>
+trying URL 'https://docs.google.com/spreadsheet/pub?key=phAwcNAVuyj0NpF2PTov2Cw&amp;output=xlsx'
+Content type 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' length unknown
+downloaded 560 KB
+
+NAs introduced by coercion</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="bonus-challenge-2." class="section level2 tabset tabset-fade tabset-pills">
+<h2><strong>Bonus Challenge 2.</strong></h2>
+<div id="assignment-1" class="section level3">
+<h3>Assignment</h3>
+<blockquote>
+<ol style="list-style-type: decimal">
+<li><p>The only thing left is just to put the column names back where they belong - to column headers. Take the “long” dataframe we just created and convert it to <code>tidy</code> format</p></li>
+<li><p>Join it to gapminder dataset, preserving 1704 rows in original gapminder dataframe. What type of join makes sense here? Save your complete dataset in “gapminder_plus2.csv”</p></li>
+</ol>
+<p>TIP: you will have to create a unique index for groups you are trying to collapse together</p>
+</blockquote>
+</div>
+<div id="solution-1" class="section level3">
+<h3>Solution</h3>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2FwbWluZGVyX3dlYl9sb25nICU+JSBcbiAgZ3JvdXBfYnkoY291bnRyeSwgdmFyX25hbWUpICU+JSBcbiAgbXV0YXRlKGNvdW50cnlfeWVhcl9pZD0xOm4oKSkgJT4lIFxuICBzcHJlYWQoa2V5PXZhcl9uYW1lLCB2YWx1ZT12YWx1ZSkgJT4lIFxuICBzZWxlY3QoLWNvdW50cnlfeWVhcl9pZCkgJT4lIFxuICByaWdodF9qb2luKGdhcG1pbmRlcikgJT4lIFxuICB3cml0ZV9jc3YoXCJnYXBtaW5kZXJfcGx1czIuY3N2XCIpXG5gYGAifQ== -->
+<pre class="r"><code>gapminder_web_long %&gt;% 
+  group_by(country, var_name) %&gt;% 
+  mutate(country_year_id=1:n()) %&gt;% 
+  spread(key=var_name, value=value) %&gt;% 
+  select(-country_year_id) %&gt;% 
+  right_join(gapminder) %&gt;% 
+  write_csv(&quot;gapminder_plus2.csv&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiSm9pbmluZywgYnkgPSBjKFwiY291bnRyeVwiLCBcInllYXJcIilcbkNvbHVtbiBgY291bnRyeWAgam9pbmluZyBjaGFyYWN0ZXIgdmVjdG9yIGFuZCBmYWN0b3IsIGNvZXJjaW5nIGludG8gY2hhcmFjdGVyIHZlY3RvclxuIn0= -->
+<pre><code>Joining, by = c(&quot;country&quot;, &quot;year&quot;)
+Column `country` joining character vector and factor, coercing into character vector</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkZ1bmN0aW9uYWwgcHJvZ3JhbW1pbmcgaW4gUiINCm91dHB1dDogIA0KICBodG1sX2RvY3VtZW50Og0KICAgIHRvYzogdHJ1ZQ0KICAgIHRvY19mbG9hdDoNCiAgICAgIGNvbGxhcHNlZDogZmFsc2UNCiAgICAgIHNtb290aF9zY3JvbGw6IGZhbHNlDQogIGh0bWxfbm90ZWJvb2s6IGRlZmF1bHQNCmRhdGU6ICIxOCBGZWJydWFyeSAyMDE4Ig0KLS0tDQoNCiMjIEZ1bmN0aW9uYWwgcHJvZ3JhbW1pbmcNCg0KSW4gdGhlIGB0aWR5cmAgbGVzc29uIHdlIHdlcmUgbWFudWFsbHkgZG93bmxvYWRpbmcgc3ByZWFkc2hlZXRzIHRvIGpvaW4gdG8gYGdhcG1pbmRlcmAuIEJ1dCB3aGF0IGlmIHNvbWVvbmUgd2FudHMgdG8gcmVydW4gb3VyIHNjcmlwdD8gVGhleSB3b3VsZG50IGtub3cgd2hpY2ggZmlsZXMgdG8gZG93bmxvYWQgb3Igd2hlcmUgdG8gZmluZCB0aG9zZSBmaWxlcy4gQW5kIHdoYXQgaWYgd2UgbmVlZCB0byByZXJ1biBvdXIgYW5hbHlzaXMgZm9yIHNvbWUgb3RoZXIgbWV0cmljcyBvciBpbXBvcnQgMTAwIG5ldyBjb2x1bW5zIGZyb20gZ2FwbWluZGVyIHNwcmVhZHNoZWV0cz8NCg0KVGhlcmUncyBhIHNheWluZyBhbW9uZyBwcm9ncmFtbWVyczogIldoZW5ldmVyIHlvdSByZXBlYXQgY29kZSBtb3JlIHRoYW4gdHdpY2UsIHdyaXRlIGEgZnVuY3Rpb24iLiBTbyB3aGF0IGFyZSBmdW5jdGlvbnM/DQoNCkZ1bmN0aW9ucyBhcmUgcmV1c2FibGUgcGllY2Ugb2YgY29kZSB0aGF0IGVuY2Fwc3VsYXRlcyBsb2dpYyB0aGF0IGNhbiBiZSBhcHBsaWVkIHRvIGRpZmZlcmVudCBvYmplY3RzIHJlcGVhdGVkbHkuIEluIFIgZXZlcnl0aGluZyBpcyBhIGZ1bmN0aW9uIChldmVuIGArYCkuIEZ1bmN0aW9ucyB0YWtlICoqYXJndW1lbnRzKiogYW5kIHJldHVybiBhbiBvYmplY3QgKGZ1bmN0aW9ucyBjYW4gcmV0dXJuIG9ubHkgb25lIG9iamVjdCwgaG93ZXZlciBjb21wbGV4IGl0IGlzKS4gSGVyZSdzIGFuIGV4YW1wbGUgb2YgYSBzaW1wbGUgZnVuY3Rpb246DQoNCmBgYHtyfQ0KYWRkX25vaXNlIDwtIGZ1bmN0aW9uKHgpew0KICBsZW4gPC0gbGVuZ3RoKHgpDQogIHggKyBybm9ybShsZW4pDQp9DQoNCmFkZF9ub2lzZSgxOjEwKQ0KYGBgDQoNCldoYXQgZG9lcyBpdCBkbz8gV2VsbCwgaXQgdGFrZXMgYSB2ZWN0b3IgYW5kIGFkZHMgbm9ybWFsbHkgZGlzdHJpYnV0ZWQgcmFuZG9tIHZhbHVlcyB0byBlYWNoIG9mIGl0cyBlbGVtZW50cy4gTm90aWNlIHRoZXJlJ3MgYW4gYXJndW1lbnQgYHhgIGFuZCB0aGUgcmVzdWx0IG9mIHRoZSBsYXN0IG9wZXJhdGlvbiwgbmFtZWx5IGB4ICsgcm5vcm0obGVuKWAgaXMgcmV0dXJuZWQgYXMgdGhlIG91dHB1dC4gSG93IGNhbiB5b3UgYnJlYWsgdGhpcyBmdW5jdGlvbiwgaS5lLiBob3cgY2FuIHlvdSB0cmljayBpdCB0byByZXR1cm4gZXJyb3I/IA0KDQpIb3cgZG8geW91IGdvIGFib3V0IHdyaXRpbmcgYSBmdW5jdGlvbj8gSXQgbWF5IGJlIGRpZmZpY3VsdCB0byBzdGFydCBmcm9tIHNjcmF0Y2gsIHNvIGhlcmUncyBhbiBhZHZpY2U6ICJEbyBpdCBmb3Igb25lLCB0dXJuIGl0IGludG8gYSBmdW5jdGlvbiB0byBydW4gaXQgZm9yIGFueSIuIEluIG90aGVyIHdvcmRzLCBkb250IGZvY3VzIG9uIHdyaXRpbmcgYSBmdW5jdGlvbiB1bnRpbCB5b3UgaGF2ZSBhIHBpZWNlIG9mIGNvZGUgdGhhdCB3b3JrcyBmb3Igb25lIGVsZW1lbnQuIFRoZW4gdGhpbmsgaG93IHRoZSBjb2RlIGNhbiBiZSBnZW5lcmFsaXplZCwgYnkgZGlzdGlsbGluZyBzb21lICJhcmd1bWVudHMiIGFuZCB0aGlua2luZyBvZiB0aGUgcmV0dXJuIG9iamVjdHMgYW5kIGhvdyB0aG9zZSBtYXkgYmUgdXNlZCBieSBzdWJzZXF1ZW50IG9wZXJhdGlvbnMuIFdlIGFyZSBnb2luZyB0byB3cml0ZSBvdXIgZmlyc3QgZnVuY3Rpb24gdmVyeSBzb29uLCBidXQgZm9yIG5vdyByZW1lbWJlciB0aGlzOiAiV2hlbmV2ZXIgeW91IGFyZSB0ZW1wdGVkIHRvIGNvcHktcGFzdGUsIHlvdSBzaG91bGQgcHJvYmFibHkgd3JpdGUgYSBmdW5jdGlvbiBpbnN0ZWFkIi4NCg0KVGhlcmUncyBhIGxvdCB0byBsZWFybiBhYm91dCB3cml0aW5nIGdvb2QgZnVuY3Rpb24sIGluY2x1ZGluZyBob3cgdG8gcHJvdmlkZSBlcnJvciBoYW5kbGluZyBhbmQgZm9yZXNlZSBwcm9ibGVtcyB5b3VyIHVzZXJzIG1heSBydW4gaW50by4gU2VlIHJlc3BlY3RpdmUgc2VjdGlvbiBvZiBbU1RBVDU0NSBjb3Vyc2VdKGh0dHA6Ly9zdGF0NTQ1LmNvbS9jbTEwMl93cml0aW5nLWZ1bmN0aW9ucy5odG1sKS4NCg0KIyMgTWlzc2lvbjogR2V0dGluZyB0aGUgZGF0YSBvdXQgb2YgZ29vZ2xlc2hlZXRzDQoNCmBgYHtyfQ0KbGlicmFyeSh0aWR5dmVyc2UpDQpnYXBtaW5kZXIgPC0gZ2FwbWluZGVyOjpnYXBtaW5kZXINCmdhcG1pbmRlcl9kYXRhc291cmNlcyA8LSByZWFkX2NzdigiZ2FwbWluZGVyX2RhdGFzb3VyY2VzLmNzdiIpDQpgYGANCg0KTGV0cyBnbyBiYWNrIHRvIHRoZSB0YWJsZSBhbmQgbm90ZSBob3cgdXJsIGlzIGJ1aWx0LiBUaGVuIHdlIHdpbGwgYnVpbGQgYSB0ZW1wbGF0ZSBmb3IgdXJsICgpDQoNCmBgYHtyfQ0KDQpsaWJyYXJ5KGdsdWUpDQpsaWJyYXJ5KHJlYWR4bCkNCg0KIyBsZXRzIHBpY2sgYSBrZXkNCmtleT0iMEFyZkVEc1YzYkJ3Q2NHaEJkMk5PUVZaMWVXb3dOVnBTTmpsMWMzbFJTV2MiDQoNCmZpbGVfdXJsIDwtIGdsdWUoImh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0L3B1Yj9rZXk9e2t9Jm91dHB1dD14bHN4Iiwgaz1rZXkpDQoNCmRvd25sb2FkLmZpbGUoZmlsZV91cmwsICJ0ZW1wLnhsc3giLCAgbW9kZT0id2IiKQ0Kc2hlZXRfZGYgPC0gcmVhZF9leGNlbCgidGVtcC54bHN4IikNCmZpbGUucmVtb3ZlKCJ0ZW1wLnhsc3giKQ0KDQpgYGANCg0KIyMgKipDaGFsbGVuZ2UgMS4qKiB7LnRhYnNldCAudGFic2V0LWZhZGUgLnRhYnNldC1waWxsc30NCg0KIyMjIEFzc2lnbm1lbnQNCj4gMS4gVHVybiB0aGUgY29kZSBhYm92ZSBpbnRvIHlvdXIgZmlyc3QgZnVuY3Rpb24uIEl0IHNob3VsZCB0YWtlIGEgZ29vZ2xlIHNoZWV0IGtleSwgYW5kIHJldHVybiBhIHJhdyBkYXRhIGZyYW1lIGZyb20gZ2FwbWluZGVyLiBUZXN0IGl0IG9uIG9uZSBvZiB0aGUga2V5cyB5b3UgY2FuIGZpbmQgb24gZ2FwbWluZGVyIHBhZ2UuDQo+DQo+IDIuIFdoaWxlIHdlIGFyZSBhdCBpdCwgZ2VuZXJhbGl6ZSBjb2RlIHdlIHdyb3RlIGluIHRoZSBsYXN0IHNlc3Npb24gdG8gcmVmb3JtYXQgdGhlc2UgdHlwZXMgb2YgZGF0YWZyYW1lcy4gQWRkIHRoZSBuZWNlc3NhcnkgcG9zdC1wcm9jZXNzaW5nIGNvZGUgYW5kIGNyZWF0ZSBuZXcgZnVuY3Rpb24gd2hpY2ggdGFrZXMgYSBnb29nbGUgc2hlZXQga2V5IGFuZCByZXR1cm5zIGEgY2xlYW5lZCB1cCBkYXRhZnJhbWUuDQo+DQo+IFRJUDogWW91IHdpbGwgaGF2ZSBhIGNoYWxsZW5nZSBvZiBuYW1pbmcgY29sdW1ucy4gT25lIHNvbHV0aW9uIGNvdWxkIGJlIHRvIG5vdCAidGlkeSIiIHRoZSB0YWJsZXMgdXAgY29tcGxldGVseSwgYnV0IHJhdGhlciBrZWVwIHRoZW0gaW4gdGhlICJsb25nIiBmb3JtYXQgKHdpdGggdmFyaWFibGUgbmFtZSBpbiBhIHNlcGFyYXRlIGNvbHVtbikuDQoNCiMjIyBTb2x1dGlvbg0KDQoNCmBgYHtyfQ0KcmVhZF9nYXBtaW5kZXJfc2hlZXQxIDwtIGZ1bmN0aW9uKGtleSl7DQogIGZpbGVfdXJsIDwtIGdsdWUoImh0dHBzOi8vZG9jcy5nb29nbGUuY29tL3NwcmVhZHNoZWV0L3B1Yj9rZXk9e2t9Jm91dHB1dD14bHN4Iiwgaz1rZXkpDQogIGRvd25sb2FkLmZpbGUoZmlsZV91cmwsICJ0ZW1wLnhsc3giLCAgbW9kZT0id2IiKQ0KICByYXdfZGYgPC0gcmVhZF9leGNlbCgidGVtcC54bHN4Iiwgc2hlZXQgPSAiRGF0YSIpDQogIGZpbGUucmVtb3ZlKCJ0ZW1wLnhsc3giKQ0KICByYXdfZGYNCn0NCg0KcmVhZF9nYXBtaW5kZXJfc2hlZXQyIDwtIGZ1bmN0aW9uKGtleSl7DQogZmlsZV91cmwgPC0gZ2x1ZSgiaHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXQvcHViP2tleT17a30mb3V0cHV0PXhsc3giLCBrPWtleSkNCiBkb3dubG9hZC5maWxlKGZpbGVfdXJsLCAidGVtcC54bHN4IiwgIG1vZGU9IndiIikNCiByYXdfZGYgPC0gcmVhZF9leGNlbCgidGVtcC54bHN4Iiwgc2hlZXQgPSAiRGF0YSIpDQogZmlsZS5yZW1vdmUoInRlbXAueGxzeCIpDQoNCiAgIyBzYXZlcyBhd2F5IGNsZWFuZWQgdXAgbmFtZSBvZiBmaXJzdCBjb2x1bW4gYW5kIHJlbmFtZXMgaXQgdG8gYGNvdW50cnlgDQogdGJsX25hbWUgPC0gbmFtZXMocmF3X2RmKVsxXQ0KIG5hbWVzKHJhd19kZilbMV0gPC0gImNvdW50cnkiDQoNCiAgIyB0aWR5IHRoZSB0YWJsZSB1c2luZyBnZW5lcmljIGNvbHVtbiBuYW1lDQogbG9uZ19kZiA8LSByYXdfZGYgJT4lIA0KICAgIGdhdGhlcihrZXk9eWVhciwgdmFsdWU9dmFsdWUsIC1jb3VudHJ5KSAlPiUgDQogICAgbXV0YXRlKHllYXI9YXMuaW50ZWdlcih5ZWFyKSwNCiAgICAgICAgICAgdmFsdWU9YXMubnVtZXJpYyh2YWx1ZSksDQogICAgICAgICAgIHZhcl9uYW1lID0gbWFrZS5uYW1lcyh0YmxfbmFtZSkpDQogbG9uZ19kZg0KfQ0KYGBgDQoNCiMjIFNjYWxpbmcgaXQgdXAgd2l0aCBwdXJycg0KDQpMZXRzIGZpbmQgdGhlIHNwcmVhZHNoZWV0cyB3ZSB3ZXJlIGRvd25sb2FkaW5nIG1hbnVhbGx5IGxhc3QgdGltZToNCg0KYGBge3J9DQpzaGVldHNfb2ZfaW50ZXJlc3QgPC0gZ2FwbWluZGVyX2RhdGFzb3VyY2VzICU+JSANCiAgZmlsdGVyKHN0cl9kZXRlY3QoaW5kaWNhdG9yTmFtZSwgIltUdF1vdGFsIFtGZl1lcnRpbGl0eXxbSWldbmZhbnQgW01tXW9ydGFsaXR5IiksIGlzLm5hKHN1YmNhdGVnb3J5KSkgJT4lIA0KICBwdWxsKHNoZWV0X2lkKQ0KYGBgDQoNClNvIG5vdyBpZiB3ZSBub3cgbWFwIHRoaXMgZnVuY3Rpb24gdG8gb3VyIGBzaGVldHNfb2ZfaW50ZXJlc3RgIHdlIHNob3VsZCBiZSBhYmxlIHRvIGdldCBhIGxpc3Qgb2YgY2xlYW5lZCB1cCBkYXRhc2V0cy4gVGhpcyBsaXN0IG9mIHRpYmJsZXMgb2Ygc2ltaWxhciBzdHJ1Y3R1cmUgaXMgdmVyeSB0eXBpY2FsIHR5cGUgb2YgYW5pbWFsIGluIFIuIFNpbmNlIHRoZSBjb2x1bW4gbmFtZXMgYXJlIG1hdGNoaW5nLCB3ZSBjb3VsZCBwcm9iYWJseSBqdXN0IGFwcGVuZCB0aGVtIHRvZ2V0aGVyLiBJbiBgcHVycnJgIHBhY2thZ2UgdGhlcmUncyBhIGZ1bmN0aW9uIGBtYXBfZGZgIHdoaWNoIG91dHB1dHMgYSBkYXRhZnJhbWUgYnkgZmlyc3QgcHJvZHVjaW5nIGEgbGlzdCBvZiBzaW1pbGFyIGRhdGFmcmFtZXMgYW5kIHRoZW4gYmluZGluZyB0aGVtIHRvZ2V0aGVyLg0KDQpgYGB7cn0NCmdhcG1pbmRlcl93ZWJfbG9uZyA8LSBtYXBfZGYoc2hlZXRzX29mX2ludGVyZXN0LCByZWFkX2dhcG1pbmRlcl9zaGVldDIpDQojVmlldyhnYXBtaW5kZXJfd2ViX2xvbmcpDQpgYGANCg0KIyMgKipCb251cyBDaGFsbGVuZ2UgMi4qKiB7LnRhYnNldCAudGFic2V0LWZhZGUgLnRhYnNldC1waWxsc30NCg0KIyMjIEFzc2lnbm1lbnQNCj4gMS4gVGhlIG9ubHkgdGhpbmcgbGVmdCBpcyBqdXN0IHRvIHB1dCB0aGUgY29sdW1uIG5hbWVzIGJhY2sgd2hlcmUgdGhleSBiZWxvbmcgLSB0byBjb2x1bW4gaGVhZGVycy4gVGFrZSB0aGUgImxvbmciIGRhdGFmcmFtZSB3ZSBqdXN0IGNyZWF0ZWQgYW5kIGNvbnZlcnQgaXQgdG8gYHRpZHlgIGZvcm1hdA0KPg0KPiAyLiBKb2luIGl0IHRvIGdhcG1pbmRlciBkYXRhc2V0LCBwcmVzZXJ2aW5nIDE3MDQgcm93cyBpbiBvcmlnaW5hbCBnYXBtaW5kZXIgZGF0YWZyYW1lLiBXaGF0IHR5cGUgb2Ygam9pbiBtYWtlcyBzZW5zZSBoZXJlPyBTYXZlIHlvdXIgY29tcGxldGUgZGF0YXNldCBpbiAiZ2FwbWluZGVyX3BsdXMyLmNzdiINCj4NCj4gVElQOiB5b3Ugd2lsbCBoYXZlIHRvIGNyZWF0ZSBhIHVuaXF1ZSBpbmRleCBmb3IgZ3JvdXBzIHlvdSBhcmUgdHJ5aW5nIHRvIGNvbGxhcHNlIHRvZ2V0aGVyDQoNCiMjIyBTb2x1dGlvbg0KDQpgYGB7cn0NCmdhcG1pbmRlcl93ZWJfbG9uZyAlPiUgDQogIGdyb3VwX2J5KGNvdW50cnksIHZhcl9uYW1lKSAlPiUgDQogIG11dGF0ZShjb3VudHJ5X3llYXJfaWQ9MTpuKCkpICU+JSANCiAgc3ByZWFkKGtleT12YXJfbmFtZSwgdmFsdWU9dmFsdWUpICU+JSANCiAgc2VsZWN0KC1jb3VudHJ5X3llYXJfaWQpICU+JSANCiAgcmlnaHRfam9pbihnYXBtaW5kZXIpICU+JSANCiAgd3JpdGVfY3N2KCJnYXBtaW5kZXJfcGx1czIuY3N2IikNCmBgYA0KDQo=</div>
 
 
 

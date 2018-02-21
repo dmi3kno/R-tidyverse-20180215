@@ -1,12 +1,12 @@
 ---
 title: "Vectors"
 output:
-  html_notebook: default
   html_document:
     toc: true
     toc_float:
       collapsed: false
       smooth_scroll: false
+  html_notebook: default
 date: "18 February 2018"
 ---
 
@@ -14,7 +14,7 @@ date: "18 February 2018"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Strings (Introduction to `stringr` package)
+## Strings
 
 In this lesson we will have a look at some of the functions for manipulating strings. For more details, please review Chapter 14 of [R for Data Science](http://r4ds.had.co.nz/strings.html) and Working with Strings [Cheatsheet](https://github.com/rstudio/cheatsheets/raw/master/strings.pdf).
 
@@ -30,7 +30,7 @@ Strings are everywhere: web pages, text databases, data labels, factors. A vecto
 Lets use some of the functions found in the `stringr` package to fix some of the country names in gapminder. For example, there are country names were the word "Republic" is abbreviated to "Rep." and place at the end of the string. Lets find those countries:
 
 ```{r}
-library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
 gapminder <- gapminder::gapminder
 
 gapminder %>% filter(str_detect(country, "Rep")) %>% distinct(country)
@@ -49,30 +49,32 @@ str_replace(dr_string, dr_pattern, "")
 str_c("Republic of ",str_replace(dr_string, dr_pattern, ""))
 str_locate(dr_string, dr_pattern)
 
-str_sub(dr_string, 1,str_locate(dr_string, dr_pattern)[1,1]-1)
+str_sub(dr_string, 1, str_locate(dr_string, dr_pattern)[1,1]-1)
 str_sub(dr_string, str_locate(dr_string, dr_pattern)[1,2]+1, str_length(dr_string))
 ```
 
 ## **Challenge 1.** {.tabset .tabset-fade .tabset-pills}
 
 ### Assignment
-> 1. Find appropriate command in `readr` package to import table of data sources(https://www.gapminder.org/wp-content/themes/gapminder/cronJobs/json.js) from GAPMINDER website and remove any text preceeding first curly brackets.
+> 1. Use read_lines() to import the content of the [table of data sheets](https://www.gapminder.org/wp-content/themes/gapminder/cronJobs/json.js) from GAPMINDER website and remove any text preceeding first curly brackets`{}`.
 >
 > 2. Enclose remaining text into square brackets and read it as list using jsonlite::fromJSON(). Inspect resulting object in object explorer (double-click in the Global Environment). How many elements does the list have? 
+TIP: You may need to run `install.packages("jsonlite")` to be able to work with json format
 
 ### Solution
 
 ```{r}
 json_txt <- read_lines("https://www.gapminder.org/wp-content/themes/gapminder/cronJobs/json.js")
 
-sources_raw <- jsonlite::fromJSON(paste0("[",str_sub(json_txt, start=20),"]"), simplifyVector = FALSE)
-View(sources_raw)
+sources_raw <- jsonlite::fromJSON(paste0("[",str_sub(json_txt, start=20),"]"), 
+                                  simplifyVector = FALSE)
+#View(sources_raw)
 
 sources <- sources_raw[[1]]
-View(sources)
+#View(sources)
 ```
 
-## Lists (Introduction to purrr)
+## Subsetting lists
 
 List are special types of non-atomic vectors that can contain any types of data including other lists (recurring vectors). We can extract list elements by using conventional subsetting methods:
 
@@ -98,19 +100,43 @@ This pattern of "iteration" with subsequent "simplification" of flat list into v
 map_chr(sources, "indicatorName") %>% head()
 ```
 
-Simultaneous iteration over two lists (vectors) can be done with `map2_*()` family of functions.
 
-Let's revisit one more time: `map_*` takes list and iterates over each element applying a function. Whenever a function is `[[` (i.e. "extract"), it can be omitted, providing only the argument. See http://purrr.tidyverse.org for details
-
-## **Challenge 1.** {.tabset .tabset-fade .tabset-pills}
+## **Challenge 2.** {.tabset .tabset-fade .tabset-pills}
 
 ### Assignment
-> 1. Using tibble::tibble() make new data frame consisting of the following fields:
+> 1. Make new data frame with the following fields:
 > - indicatorName
 > - category
 > - subcategory
 > - dataprovider
 > - dataprovider_link
-> BONUS: How would you extract sheet_id, which is encoded as a list element name?
+> Populate it by pulling respective values from the list we just created. How would you extract sheet_id, which is encoded as a list element name?
 >
-> 2. 
+> 2. Save cleaned up dataframe into a csv file
+
+### Solution
+
+```{r}
+sources_df <- tibble(indicatorName = map_chr(sources, 1),
+                    category = map(sources, "category") %>% simplify(),
+                    subcategory = map_chr(sources, `[[`, "subcategory"),
+                    dataprovider = map_chr(sources, "dataprovider"),
+                    dataprovider_link = map_chr(sources, "dataprovider_link"),
+                    sheet_id=names(sources)
+                    )
+sources_df
+
+write_csv(sources_df, "gapminder_datasources.csv")
+
+# alternative solution with list-columns to be covered later
+
+#enframe(sources) %>% 
+#  mutate(value=map(value, enframe)) %>% 
+#  unnest() %>% 
+#  mutate(value=simplify(value)) %>% 
+#  spread(key=name1, value=value)
+
+```
+
+Generally speaking, `map_*` takes list and iterates over each element applying a function. Whenever a function is `[[` (i.e. "extract"), it can be omitted, providing only the argument (i.e. the name (or the number) of the element you want to extract)
+
