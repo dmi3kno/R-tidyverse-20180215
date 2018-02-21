@@ -31,7 +31,10 @@ ggplot(gapminder)+
 # ggplot(<DATA>) +
 #   geom_<GEOM_FUNCTION>(mapping=aes(<AESTETICS>))
 
-#' Let's learn some more about `ggplot2` and its functions!
+#' Let's learn some more about `ggplot2` and its functions
+
+## Imagine the rest of the script from before lunch!  
+
 #' 
 #' 
 
@@ -112,6 +115,7 @@ ggplot(gapminder)+
 
 #' saving plots is easy with `ggsave()` which by default saves the last plot into the filename you specify
 ggsave("my_plot.png")
+
 
 
 
