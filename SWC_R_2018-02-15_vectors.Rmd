@@ -1,0 +1,116 @@
+---
+title: "Vectors"
+output:
+  html_notebook: default
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+date: "18 February 2018"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Strings (Introduction to `stringr` package)
+
+In this lesson we will have a look at some of the functions for manipulating strings. For more details, please review Chapter 14 of [R for Data Science](http://r4ds.had.co.nz/strings.html) and Working with Strings [Cheatsheet](https://github.com/rstudio/cheatsheets/raw/master/strings.pdf).
+
+Strings are everywhere: web pages, text databases, data labels, factors. A vector each element of which is a string is called a character vector. Awesome `stringr` package (built upon `stringi` package) is an awesome Tidyverse toolbox for operating on strings.With functions in this package you can:
+- Detect matches
+- Subset strings
+- Manager strings' lengths
+- Mutate (alter) strings
+- Join and split strings
+- Order strings
+- Provide powerful framework for applying regular expressions for strings operations.
+
+Lets use some of the functions found in the `stringr` package to fix some of the country names in gapminder. For example, there are country names were the word "Republic" is abbreviated to "Rep." and place at the end of the string. Lets find those countries:
+
+```{r}
+library(tidyverse)
+gapminder <- gapminder::gapminder
+
+gapminder %>% filter(str_detect(country, "Rep")) %>% distinct(country)
+
+```
+Note the `str_detect()` which takes a pattern and returns a `TRUE/FALSE`. Most of the functions in `stringr` are vectorized so you can safely use them in dataframes. How would we replace the abbreviations of interest with the proper values?
+
+```{r}
+library(stringr)
+
+dr_string <- "Congo, Dem. Rep."
+dr_pattern <- ", Dem\\. Rep\\.$"
+str_detect(dr_string, dr_pattern)
+
+str_replace(dr_string, dr_pattern, "")
+str_c("Republic of ",str_replace(dr_string, dr_pattern, ""))
+str_locate(dr_string, dr_pattern)
+
+str_sub(dr_string, 1,str_locate(dr_string, dr_pattern)[1,1]-1)
+str_sub(dr_string, str_locate(dr_string, dr_pattern)[1,2]+1, str_length(dr_string))
+```
+
+## **Challenge 1.** {.tabset .tabset-fade .tabset-pills}
+
+### Assignment
+> 1. Find appropriate command in `readr` package to import table of data sources(https://www.gapminder.org/wp-content/themes/gapminder/cronJobs/json.js) from GAPMINDER website and remove any text preceeding first curly brackets.
+>
+> 2. Enclose remaining text into square brackets and read it as list using jsonlite::fromJSON(). Inspect resulting object in object explorer (double-click in the Global Environment). How many elements does the list have? 
+
+### Solution
+
+```{r}
+json_txt <- read_lines("https://www.gapminder.org/wp-content/themes/gapminder/cronJobs/json.js")
+
+sources_raw <- jsonlite::fromJSON(paste0("[",str_sub(json_txt, start=20),"]"), simplifyVector = FALSE)
+View(sources_raw)
+
+sources <- sources_raw[[1]]
+View(sources)
+```
+
+## Lists (Introduction to purrr)
+
+List are special types of non-atomic vectors that can contain any types of data including other lists (recurring vectors). We can extract list elements by using conventional subsetting methods:
+
+```{r}
+sources[1] #does not "peel off" layers of lists, only reduces number of elements retrieved
+sources[[1]] # "peels off" one layer - returns a list corresponding to first entry
+sources[[1]]$indicatorName # returns category name for first entry
+sources[[1]]$dataprovider
+sources[[2]]$indicatorName # second entry (second line) in table
+```
+
+How do we get all values of `indicatorName` at once? Effectively we need to "iterate" over elements, visiting each element one of the time and extracting `indicatorName` each element in sources?
+
+```{r}
+library(purrr)
+map(sources, `[[`, "indicatorName") %>% simplify() %>% head() # named vector
+map(sources, "indicatorName") %>% simplify() %>% head() # named vector
+```
+
+This pattern of "iteration" with subsequent "simplification" of flat list into vector is suppoted in purrr with a family of functions `map_chr()`, `map_dbl()`, `map_int()`, etc. These functions are type-stable: they return what they promise or fail with error.
+
+```{r}
+map_chr(sources, "indicatorName") %>% head()
+```
+
+Simultaneous iteration over two lists (vectors) can be done with `map2_*()` family of functions.
+
+Let's revisit one more time: `map_*` takes list and iterates over each element applying a function. Whenever a function is `[[` (i.e. "extract"), it can be omitted, providing only the argument. See http://purrr.tidyverse.org for details
+
+## **Challenge 1.** {.tabset .tabset-fade .tabset-pills}
+
+### Assignment
+> 1. Using tibble::tibble() make new data frame consisting of the following fields:
+> - indicatorName
+> - category
+> - subcategory
+> - dataprovider
+> - dataprovider_link
+> BONUS: How would you extract sheet_id, which is encoded as a list element name?
+>
+> 2. 
