@@ -1,0 +1,78 @@
+---
+title: "Modeling in tidyverse"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+  html_notebook: default
+date: "18 February 2018"
+---
+
+Most recent addition to tidyverse is `rsample` which introduces new way of peformning advanced resampling of the data. Package documentation is [here](https://topepo.github.io/rsample). A little older but incredibly useful package is `modelr`which has a lot of helper functions for evaluating models. We will only scratch a surface today with simple linear models, mostly focusing on different approaches to cross-validation.
+
+```{r}
+library(tidyverse)
+library(rsample)
+library(broom)
+library(modelr)
+
+gapminder <- gapminder::gapminder
+
+models_df <- tribble(
+  ~mdl,        ~frml,
+  "yr",         as.formula(lifeExp ~ year),
+  "gdp",        as.formula(lifeExp ~ log(gdpPercap)),
+  "yr_gdp",     as.formula(lifeExp ~ year + log(gdpPercap)),
+  "yr_pop_gdp", as.formula(lifeExp ~ year + pop + log(gdpPercap))
+)
+
+```
+
+
+```{r}
+cv_samples <- gapminder %>% 
+  group_by(continent) %>% nest() %>% 
+  mutate(cv=map(data, vfold_cv)) %>% 
+  unnest(cv)
+cv_samples
+
+cv_models_df <- cv_samples %>% 
+  crossing(models_df)
+
+perf_metrics <- cv_models_df %>% 
+  mutate(fits=map2(frml, splits, ~lm(formula=.x, data=analysis(.y))),
+         rmse=map2_dbl(fits, splits, ~modelr::rmse(.x, data=assessment(.y))))
+
+ggplot(perf_metrics)+
+  geom_boxplot(aes(x=continent, y=rmse))+
+  facet_wrap( ~mdl)
+```
+
+It seems like more complex model wins. But is it really going to help us in predicting the future?
+
+Lets do time-aware resampling
+
+```{r}
+
+cv_samples <- gapminder %>% 
+  group_by(continent, country) %>% nest() %>% 
+  mutate(ro_rsmpl=map(data, rolling_origin, initial=7)) %>% 
+  unnest(ro_rsmpl)
+
+cv_models_df <- cv_samples %>% 
+  tidyr::crossing(models_df)
+
+resid_df <- cv_models_df %>% 
+  mutate(fits = map2(frml, splits, ~lm(formula=.x, data=analysis(.y))),
+         rmse = map2_dbl(fits, splits, ~modelr::rmse(.x, data=assessment(.y)))) 
+
+ggplot(resid_df) + 
+  geom_line(aes(x=id, y=rmse, group=country, color=continent))+
+  facet_wrap(~mdl)
+
+
+resid_df %>% filter(mdl=="yr",rmse>10) %>% arrange(continent, country, id)
+```
+
